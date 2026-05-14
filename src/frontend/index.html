@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System - Tax Invoice Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #3b82f6;
+            --accent-color: #f59e0b;
+            --text-color: #1f2937;
+            --light-text: #6b7280;
+            --border-color: #e5e7eb;
+            --bg-light: #f9fafb;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            opacity: 0.95;
+            font-size: 14px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-section h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        input[type="text"]:disabled,
+        input[type="number"]:disabled,
+        select:disabled {
+            background-color: var(--bg-light);
+            color: var(--light-text);
+            cursor: not-allowed;
+        }
+
+        /* Line Items Section */
+        .line-items-section {
+            grid-column: 1 / -1;
+        }
+
+        .line-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .line-items-table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .line-items-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .line-items-table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .line-items-table tbody tr:nth-child(even) {
+            background-color: var(--bg-light);
+        }
+
+        .line-items-table tbody tr:hover {
+            background-color: #e0e7ff;
+        }
+
+        .line-items-table input[type="number"],
+        .line-items-table input[type="text"],
+        .line-items-table select {
+            width: 100%;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background-color: #dc2626;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3a8a;
+            box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-section h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-row.total {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            margin: 10px -25px -25px -25px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .summary-row.highlight {
+            background-color: var(--bg-light);
+            padding: 10px;
+            margin: 0 -25px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        /* Preview Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            max-width: 1000px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--light-text);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .close:hover {
+            color: var(--text-color);
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .line-items-section {
+                grid-column: 1;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+        }
+
+        .info-box {
+            background-color: #e0e7ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--primary-color);
+        }
+
+        .disabled-field {
+            background-color: var(--bg-light) !important;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Tax Invoice Generator</h1>
+            <p>Dynamic Billing System with Real-time Calculations</p>
+        </header>
+
+        <!-- Alerts -->
+        <div id="alertBox"></div>
+
+        <!-- Main Form -->
+        <form id="billForm">
+            <div class="main-grid">
+                <!-- Document Information -->
+                <div class="form-section">
+                    <h2>Document Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="documentNumber">Document Number *</label>
+                        <input type="text" id="documentNumber" name="documentNumber" placeholder="e.g., MOPL/25/26-27" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="documentDate">Document Date *</label>
+                        <input type="date" id="documentDate" name="documentDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" name="dueDate">
+                    </div>
+                </div>
+
+                <!-- Buyer Selection -->
+                <div class="form-section">
+                    <h2>Buyer Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="buyerSelect">Select Buyer/Company *</label>
+                        <select id="buyerSelect" name="buyerSelect" required onchange="handleBuyerChange()">
+                            <option value="">-- Select a buyer --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyerName">Company Name</label>
+                        <input type="text" id="buyerName" name="buyerName" disabled class="disabled-field">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyerGSTIN">GSTIN</label>
+                        <input type="text" id="buyerGSTIN" name="buyerGSTIN" disabled class="disabled-field">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyerAddress">Address</label>
+                        <input type="text" id="buyerAddress" name="buyerAddress" disabled class="disabled-field">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyerState">State Code</label>
+                        <input type="text" id="buyerState" name="buyerState" disabled class="disabled-field">
+                    </div>
+                </div>
+
+                <!-- Line Items -->
+                <div class="form-section line-items-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin: 0; border: none; padding: 0;">Line Items</h2>
+                        <button type="button" class="btn-primary" onclick="addLineItem()">+ Add Item</button>
+                    </div>
+
+                    <div class="info-box">
+                        Select products from the dropdown or enter custom items. All calculations are automatic.
+                    </div>
+
+                    <table class="line-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product/Material</th>
+                                <th>Description</th>
+                                <th>HSN Code</th>
+                                <th>Qty</th>
+                                <th>Unit</th>
+                                <th>Rate (₹)</th>
+                                <th>Tax %</th>
+                                <th>Total (₹)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lineItemsBody">
+                            <!-- Line items will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary -->
+                <div class="form-section">
+                    <h2>Bill Summary</h2>
+                    
+                    <div class="summary-row">
+                        <span>Taxable Value:</span>
+                        <span id="summaryTaxableValue">₹ 0.00</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>CGST (9% or 0%):</span>
+                        <span id="summaryCGST">₹ 0.00</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>SGST (9% or 0%):</span>
+                        <span id="summarySGST">₹ 0.00</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>IGST (18% or 0%):</span>
+                        <span id="summaryIGST">₹ 0.00</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <label for="roundOff">Round Off:</label>
+                        <input type="number" id="roundOff" name="roundOff" step="0.01" value="0" style="width: 150px; padding: 6px;">
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>GRAND TOTAL:</span>
+                        <span id="summaryGrandTotal">₹ 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="form-section line-items-section">
+                    <div class="button-group">
+                        <button type="button" class="btn-outline" onclick="previewBill()">
+                            Preview
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="saveDraft()">
+                            Save as Draft
+                        </button>
+                        <button type="submit" class="btn-success">
+                            Generate PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bill Preview</h2>
+                <button type="button" class="close" onclick="closePreview()">&times;</button>
+            </div>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+
+    <script src="/js/billForm.js"></script>
+</body>
+</html>
